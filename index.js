@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import authRouter from "./routes/auth.route.js";
+import mentorRouter from "./routes/mentor.route.js";
 dotenv.config();
 
 const app = express();
@@ -13,7 +14,9 @@ app.use(cors());
 
 app.use(helmet());
 
-app.use("auth", authRouter);
+app.use("/auth", authRouter);
+
+app.use("/mentor", mentorRouter);
 
 app.get("/", (req, res) => res.sendStatus(200));
 
