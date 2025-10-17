@@ -1,3 +1,4 @@
+import prisma from "../utils/prisma.js";
 export const validateSignup = (req, res, next) => {
   const { name, email, password } = req.body;
 
@@ -26,4 +27,25 @@ export const validateMentorProfile = (req, res, next) => {
       .json({ success: false, message: "All inputs must be filled" });
 
   next();
+};
+
+export const validateEditMentorProfile = async (req, res, next) => {
+  const { id } = req.params;
+  const user = req.user;
+  try {
+    const mentor = await prisma.mentor.findUnique({ where: { id } });
+    if (!mentor)
+      res
+        .status(404)
+        .json({ success: false, message: "Mentor profile not found" });
+
+    if (user.role !== "MENTOR" || user.mentorId !== mentor.id)
+      return res
+        .status(403)
+        .json({ success: false, message: "You are unable to make the action" });
+
+    next();
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error validating" });
+  }
 };

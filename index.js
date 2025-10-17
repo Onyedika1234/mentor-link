@@ -4,6 +4,7 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 import authRouter from "./routes/auth.route.js";
 import mentorRouter from "./routes/mentor.route.js";
+import userRoute from "./routes/user.route.js";
 dotenv.config();
 
 const app = express();
@@ -16,7 +17,9 @@ app.use(helmet());
 
 app.use("/auth", authRouter);
 
-app.use("/mentor", mentorRouter);
+app.use("/mentors", mentorRouter);
+
+app.use("/user", userRoute);
 
 app.get("/", (req, res) => res.sendStatus(200));
 
