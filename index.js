@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRouter from "./routes/auth.route.js";
 import mentorRouter from "./routes/mentor.route.js";
 import userRoute from "./routes/user.route.js";
+import sessionRouter from "./routes/session.route.js";
 dotenv.config();
 
 const app = express();
@@ -20,6 +21,8 @@ app.use("/auth", authRouter);
 app.use("/mentors", mentorRouter);
 
 app.use("/user", userRoute);
+
+app.use("/sessions", sessionRouter);
 
 app.get("/", (req, res) => res.sendStatus(200));
 

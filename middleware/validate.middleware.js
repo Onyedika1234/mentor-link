@@ -49,3 +49,12 @@ export const validateEditMentorProfile = async (req, res, next) => {
     res.status(500).json({ success: false, message: "Error validating" });
   }
 };
+
+export const validateSessionCreation = (req, res, next) => {
+  const { scheduledAt } = req.body;
+
+  if (!scheduledAt)
+    return res
+      .status(400)
+      .json({ success: false, message: "Scheduled date and time is required" });
+};
