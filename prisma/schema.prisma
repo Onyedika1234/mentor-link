@@ -14,41 +14,46 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      Role     @default(STUDENT)
-  mentor    Mentor? 
+  role      Role      @default(STUDENT)
+  mentor    Mentor?
   mentorId  String?
   sessions  Session[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
+
 // mentor/create/:userId
 model Mentor {
-  id          String    @id @default(uuid())
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String    @unique
-  expertise   Json
-  bio         String?
-  rating      Float     @default(0)
-  sessions    Session[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String    @id @default(uuid())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String    @unique
+  expertise Json
+  bio       String?
+  rating    Float     @default(0)
+  sessions  Session[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Session {
-  id          String    @id @default(uuid())
-  mentor      Mentor    @relation(fields: [mentorId], references: [id])
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  date        String
+  time        String
+  duration    String
+  mentor      Mentor   @relation(fields: [mentorId], references: [id])
   mentorId    String
-  student     User      @relation(fields: [studentId], references: [id])
+  student     User?    @relation(fields: [studentId], references: [id])
   studentId   String
-  topic       String
-  status      Status    @default(PENDING)
-  createdAt   DateTime  @default(now())
+  rating Float @default(0)
+  status      Status   @default(PENDING)
+  createdAt   DateTime @default(now())
 }
-
 enum Role {
   STUDENT
   MENTOR
@@ -61,4 +66,3 @@ enum Status {
   COMPLETED
   CANCELLED
 }
-

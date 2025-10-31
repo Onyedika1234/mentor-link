@@ -46,9 +46,25 @@ export const getProfile = async (req, res) => {
 };
 
 export const getAllMentors = async (req, res) => {
+  const { skills } = req.query;
+  const filteredSkills = filteredQuery(skills);
   try {
     const mentors = await prisma.mentor.findMany();
-    res.status(200).json({ success: true, mentors });
+
+    if (filteredSkills === undefined) {
+      res.status(200).json({ success: true, mentors });
+    } else {
+      const filteredMentor = mentors.filter((mentor) =>
+        mentor.expertise.includes(filteredSkills)
+      );
+
+      if (!filteredMentor)
+        return res.status(404).json({
+          success: false,
+          message: "Mentors with desired Skills does not exist",
+        });
+      res.status(200).json({ success: true, filteredMentor });
+    }
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching mentors" });
   }
@@ -70,3 +86,7 @@ export const updateMentorAccount = async (req, res) => {
       .json({ success: false, message: "Error updating mentor profile" });
   }
 };
+
+function filteredQuery(skill) {
+  return skill ? skill : undefined;
+}

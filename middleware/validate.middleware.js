@@ -51,10 +51,27 @@ export const validateEditMentorProfile = async (req, res, next) => {
 };
 
 export const validateSessionCreation = (req, res, next) => {
-  const { scheduledAt } = req.body;
+  const { title, description, date, time, duration } = req.body;
 
-  if (!scheduledAt)
+  if (!title || !description || !date || !time || !duration)
     return res
       .status(400)
-      .json({ success: false, message: "Scheduled date and time is required" });
+      .json({ success: false, message: "All fields are required" });
+};
+
+export const validateRating = (req, res, next) => {
+  const { rating } = req.body;
+  if (!rating)
+    return res
+      .status(400)
+      .json({ success: false, message: "Rating field is important" });
+
+  if (typeof rating !== "number")
+    return res
+      .status(422)
+      .json({ success: false, message: "Rating must be a number" });
+
+  res.rating = rating;
+
+  next();
 };
