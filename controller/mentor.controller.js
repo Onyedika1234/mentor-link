@@ -1,4 +1,5 @@
 import prisma from "../utils/prisma.js";
+import client from "../utils/redis.js";
 export const createProfile = async (req, res) => {
   const { expertise, bio } = req.body;
   const user = req.user;
@@ -32,14 +33,23 @@ export const getProfile = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const profile = await prisma.mentor.findUnique({
-      where: { id },
-      include: { user: true },
-    });
-    if (!profile)
-      res.status(404).json({ success: false, message: "Profile not found" });
+    const cachedProfile = await client.get(`profile/${id}`);
+    if (cachedProfile) {
+      return res
+        .status(200)
+        .json({ success: true, profile: JSON.parse(cachedProfile) });
+    } else {
+      const profile = await prisma.mentor.findUnique({
+        where: { id },
+        include: { user: true },
+      });
+      if (!profile)
+        res.status(404).json({ success: false, message: "Profile not found" });
 
-    res.status(200).json({ success: true, profile });
+      await client.SETEX(`profile/${id}`, 3600, JSON.stringify(profile));
+
+      res.status(200).json({ success: true, profile });
+    }
   } catch (error) {
     res.sendStatus(500);
   }
@@ -49,7 +59,18 @@ export const getAllMentors = async (req, res) => {
   const { skills } = req.query;
   const filteredSkills = filteredQuery(skills);
   try {
-    const mentors = await prisma.mentor.findMany();
+    let mentors;
+
+    const cachedMentors = await client.get("mentors");
+
+    if (cachedMentors) {
+      console.log("Cache hit");
+      mentors = JSON.parse(cachedMentors);
+    } else {
+      console.log("Cache miss");
+      mentors = await prisma.mentor.findMany();
+      await client.SETEX("mentors", 3600, JSON.stringify(mentors));
+    }
 
     if (filteredSkills === undefined) {
       res.status(200).json({ success: true, mentors });
@@ -66,6 +87,7 @@ export const getAllMentors = async (req, res) => {
       res.status(200).json({ success: true, filteredMentor });
     }
   } catch (error) {
+    console.error(error.message);
     res.status(500).json({ success: false, message: "Error fetching mentors" });
   }
 };

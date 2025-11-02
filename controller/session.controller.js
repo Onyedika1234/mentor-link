@@ -1,9 +1,17 @@
 import prisma from "../utils/prisma.js";
-
+import client from "../utils/redis.js";
 export const getSessions = async (req, res) => {
   try {
-    const session = await prisma.session.findMany();
-    res.status(200).json({ success: true, session });
+    const cachedSession = await client.get("session");
+    if (cachedSession) {
+      return res
+        .status(200)
+        .json({ success: true, session: JSON.parse(cachedSession) });
+    } else {
+      const session = await prisma.session.findMany();
+      await client.SETEX("session", 3600, JSON.stringify(session));
+      return res.status(200).json({ success: true, session });
+    }
   } catch (error) {
     res
       .status(500)
