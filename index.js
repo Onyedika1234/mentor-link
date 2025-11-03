@@ -6,6 +6,7 @@ import authRouter from "./routes/auth.route.js";
 import mentorRouter from "./routes/mentor.route.js";
 import userRoute from "./routes/user.route.js";
 import sessionRouter from "./routes/session.route.js";
+import { globalLimit } from "./utils/ratelimit.js";
 dotenv.config();
 
 const app = express();
@@ -15,6 +16,8 @@ app.use(express.json());
 app.use(cors());
 
 app.use(helmet());
+
+app.use(globalLimit);
 
 app.use("/auth", authRouter);
 

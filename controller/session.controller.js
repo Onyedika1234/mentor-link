@@ -42,7 +42,6 @@ export const createSession = async (req, res) => {
         status: "PENDING",
       },
     });
-
     res.status(201).json({ success: true, session });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error creating session" });

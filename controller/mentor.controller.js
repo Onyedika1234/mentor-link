@@ -21,7 +21,22 @@ export const createProfile = async (req, res) => {
       return { mentor, updatedUser };
     });
 
-    res.status(201).json({ success: true, mentor: result.mentor });
+    const createdAccount = result.mentor; //Simplify the result.mentor into one varible
+
+    let cachedMentors = await client.get("mentors"); //Get the cached Mentors
+
+    if (!cachedMentors) {
+      //A check if cachedMentor is empty and if empty query the db
+      cachedMentors = await prisma.mentor.findMany();
+    }
+
+    //Updating the redis db with the updated data
+    await client.setEx(
+      "mentors",
+      3600,
+      JSON.stringify([...cachedMentors, createdAccount])
+    );
+    res.status(201).json({ success: true, mentor: createdAccount });
   } catch (error) {
     res
       .status(500)
@@ -100,6 +115,11 @@ export const updateMentorAccount = async (req, res) => {
       where: { id },
       data: { expertise, bio },
     });
+
+    const mentors = await prisma.mentor.findMany();
+
+    await client.setEx("mentors", 3600, JSON.stringify(mentors));
+    // await client.setEx(`profile/${id}`, 3600, JSON.stringify(updatedMentor));
 
     res.status(200).json({ success: true, updatedMentor });
   } catch (error) {
