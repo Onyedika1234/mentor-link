@@ -21,21 +21,21 @@ export const createProfile = async (req, res) => {
       return { mentor, updatedUser };
     });
 
-    const createdAccount = result.mentor; //Simplify the result.mentor into one varible
+    // const createdAccount = result.mentor; //Simplify the result.mentor into one varible
 
-    let cachedMentors = await client.get("mentors"); //Get the cached Mentors
+    // let cachedMentors = await client.get("mentors"); //Get the cached Mentors
 
-    if (!cachedMentors) {
-      //A check if cachedMentor is empty and if empty query the db
-      cachedMentors = await prisma.mentor.findMany();
-    }
+    // if (!cachedMentors) {
+    //   //A check if cachedMentor is empty and if empty query the db
+    //   cachedMentors = await prisma.mentor.findMany();
+    // }
 
-    //Updating the redis db with the updated data
-    await client.setEx(
-      "mentors",
-      3600,
-      JSON.stringify([...cachedMentors, createdAccount])
-    );
+    // //Updating the redis db with the updated data
+    // await client.setEx(
+    //   "mentors",
+    //   3600,
+    //   JSON.stringify([...cachedMentors, createdAccount])
+    // );
     res.status(201).json({ success: true, mentor: createdAccount });
   } catch (error) {
     res
@@ -61,7 +61,7 @@ export const getProfile = async (req, res) => {
       if (!profile)
         res.status(404).json({ success: false, message: "Profile not found" });
 
-      await client.SETEX(`profile/${id}`, 3600, JSON.stringify(profile));
+      await client.SETEX(`profile/${id}`, 300, JSON.stringify(profile));
 
       res.status(200).json({ success: true, profile });
     }
@@ -94,11 +94,12 @@ export const getAllMentors = async (req, res) => {
         mentor.expertise.includes(filteredSkills)
       );
 
-      if (!filteredMentor)
+      if (filteredMentor.length === 0)
         return res.status(404).json({
           success: false,
           message: "Mentors with desired Skills does not exist",
         });
+
       res.status(200).json({ success: true, filteredMentor });
     }
   } catch (error) {

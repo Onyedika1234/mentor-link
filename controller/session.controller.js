@@ -8,8 +8,10 @@ export const getSessions = async (req, res) => {
         .status(200)
         .json({ success: true, session: JSON.parse(cachedSession) });
     } else {
-      const session = await prisma.session.findMany();
-      await client.SETEX("session", 3600, JSON.stringify(session));
+      const session = await prisma.session.findMany({
+        select: { id, title, time, mentor, duration, rating, student },
+      });
+      await client.SETEX("session", 300, JSON.stringify(session));
       return res.status(200).json({ success: true, session });
     }
   } catch (error) {
